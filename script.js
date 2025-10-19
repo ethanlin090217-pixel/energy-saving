@@ -1,54 +1,65 @@
-document.getElementById("appliance-form").addEventListener("submit", function (e) {
-  e.preventDefault();
+document.getElementById('appliance-form').addEventListener('submit', function (e) {
+    e.preventDefault();
 
-  const name = document.getElementById("name").value.trim();
-  const wattsInput = parseFloat(document.getElementById("watts").value);
-  const amps = parseFloat(document.getElementById("amps").value);
-  const volts = parseFloat(document.getElementById("volts").value);
-  const hours = parseFloat(document.getElementById("hours").value);
-  const rate = parseFloat(document.getElementById("rate").value);
+    // Get values from form
+    const name = document.getElementById('appliance-name').value.trim();
+    const wattageInput = parseFloat(document.getElementById('wattage').value);
+    const amps = parseFloat(document.getElementById('amps').value);
+    const volts = parseFloat(document.getElementById('volts').value);
+    const hoursOff = parseFloat(document.getElementById('hours-off').value);
+    const rateCents = parseFloat(document.getElementById('kwh-rate').value);
 
-  // Basic required validation
-  if (!name || isNaN(hours) || isNaN(rate)) {
-    alert("Please enter appliance name, hours, and kWh rate.");
-    return;
-  }
+    if (!name || isNaN(hoursOff) || isNaN(rateCents)) {
+        alert("Please fill in appliance name, hours off per day, and kWh rate.");
+        return;
+    }
 
-  let watts = 0;
-  if (!isNaN(wattsInput)) {
-    watts = wattsInput;
-  } else if (!isNaN(amps) && !isNaN(volts)) {
-    watts = amps * volts;
-  } else {
-    alert("Enter either wattage or both amps and volts.");
-    return;
-  }
+    // Calculate wattage: use provided or fallback to amps × volts
+    let wattage = !isNaN(wattageInput) ? wattageInput :
+                  (!isNaN(amps) && !isNaN(volts)) ? amps * volts : null;
 
-  const kWhRate = rate / 100;
-  const kWhSavedPerDay = (watts * hours) / 1000;
-  const dailySavings = kWhSavedPerDay * kWhRate;
-  const monthlySavings = dailySavings * 30;
-  const yearlySavings = dailySavings * 365;
+    if (!wattage || isNaN(wattage)) {
+        alert("Please enter either wattage or both amps and volts.");
+        return;
+    }
 
-  // CO2 emissions savings (EPA standard: 0.92 lbs CO2 per kWh)
-  const CO2_PER_KWH = 0.92;
-  const dailyCO2 = kWhSavedPerDay * CO2_PER_KWH;
-  const monthlyCO2 = dailyCO2 * 30;
-  const yearlyCO2 = dailyCO2 * 365;
+    // Convert rate from cents to dollars
+    const rate = rateCents / 100;
 
-  const listItem = document.createElement("li");
-  listItem.innerHTML = `
-    <strong>${name}</strong>: 
-    $${dailySavings.toFixed(2)}/day, 
-    $${monthlySavings.toFixed(2)}/month, 
-    $${yearlySavings.toFixed(2)}/year<br>
-    🌱 CO₂ Saved: ${dailyCO2.toFixed(2)} lbs/day, 
-    ${monthlyCO2.toFixed(2)} lbs/month, 
-    ${yearlyCO2.toFixed(2)} lbs/year
-  `;
+    // Calculate daily kWh saved
+    const kWhSavedPerDay = (wattage * hoursOff) / 1000;
+    const dailySavings = kWhSavedPerDay * rate;
+    const monthlySavings = dailySavings * 30;
+    const yearlySavings = dailySavings * 365;
 
-  document.getElementById("appliance-list").appendChild(listItem);
+    // CO2 savings: 0.92 pounds CO2 per kWh saved
+    const dailyCO2 = kWhSavedPerDay * 0.92;
+    const monthlyCO2 = dailyCO2 * 30;
+    const yearlyCO2 = dailyCO2 * 365;
 
-  // Reset form
-  e.target.reset();
+    // Format savings
+    const dollars = amount => `$${amount.toFixed(2)}`;
+    const pounds = amount => `${amount.toFixed(2)} lbs`;
+
+    // Display results
+    const listItem = document.createElement('li');
+    listItem.innerHTML = `
+        <strong>${name}:</strong> 
+        ${dollars(dailySavings)}/day, 
+        ${dollars(monthlySavings)}/month, 
+        ${dollars(yearlySavings)}/year
+        <br>
+        CO₂ Saved: 
+        ${pounds(dailyCO2)}/day, 
+        ${pounds(monthlyCO2)}/month, 
+        ${pounds(yearlyCO2)}/year
+    `;
+    listItem.style.backgroundColor = "#e0f2ff";
+    listItem.style.padding = "10px";
+    listItem.style.marginTop = "10px";
+
+    document.getElementById('appliance-list').appendChild(listItem);
+
+    // Reset form (except name)
+    document.getElementById('appliance-form').reset();
 });
