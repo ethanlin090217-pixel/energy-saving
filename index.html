@@ -20,9 +20,7 @@
       width: 100%;
       max-width: 640px;
     }
-    input, button, label {
-      font-size: 16px;
-    }
+    input, button, label { font-size: 16px; }
     input, select {
       display: block;
       width: 100%;
@@ -50,6 +48,7 @@
     .days-wrap.show { display: block; }
     .hint { font-size: 12px; color: #666; margin-top: -6px; }
     .error { color: #b00020; background:#ffe8e8; padding:8px; border-radius:6px; margin:8px 0; display:none; }
+    .ok { font-size: 12px; color:#2c7a2c; }
   </style>
 </head>
 <body>
@@ -57,6 +56,7 @@
     <h1>Energy Savings Calculator</h1>
 
     <div id="error" class="error"></div>
+    <div id="status" class="ok"></div>
 
     <form id="appliance-form" novalidate>
       <input type="text" id="appliance-name" placeholder="Appliance Name (e.g., fridge)" required />
@@ -81,7 +81,7 @@
 
       <div id="days-wrap" class="days-wrap">
         <input type="number" id="days-since" step="any" min="0" placeholder="Days since installed (e.g., 42)" />
-        <div class="hint">When checked, this becomes required. We’ll show total $ and CO₂ saved over this many days.</div>
+        <div class="hint">When checked, this becomes required. We’ll show total $ and CO₂ saved for this many days.</div>
       </div>
 
       <button type="submit" id="add-btn">Add Appliance</button>
@@ -93,6 +93,7 @@
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <!-- IMPORTANT: keep script.js in the same folder, name exactly 'script.js' -->
+  <script src="./script.js" defer></script>
 </body>
 </html>
