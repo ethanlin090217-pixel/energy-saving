@@ -1,33 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Energy Savings Calculator</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Energy Savings Calculator</title>
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>Energy Savings Calculator</h1>
- 
-    <form id="appliance-form">
-  <input type="text" placeholder="Appliance name (e.g., fryer)" id="name" />
-  <input type="number" placeholder="Wattage (optional)" id="watts" step="any" />
-  <input type="number" placeholder="Amps (e.g., 3.3)" id="amps" step="any" />
-  <input type="number" placeholder="Volts (e.g., 120)" id="volts" step="any" />
-  <input type="number" placeholder="Hours Off Per Day" id="hours" step="any" />
-  <input type="number" placeholder="kWh Rate (¢)" id="rate" step="any" />
-  <button type="submit">Add Appliance</button>
-</form>
-
-
-
-    <div id="savings-summary">
-      <h2>Estimated Savings</h2>
-      <ul id="appliance-list"></ul>
+    <div class="container">
+        <h1>Energy Savings Calculator</h1>
+        <form id="appliance-form">
+            <input type="text" id="name" placeholder="Appliance Name (e.g., fridge)" required />
+            <input type="number" id="watts" placeholder="Wattage (optional)" />
+            <input type="number" id="amps" placeholder="Amps (e.g., 3.3)" />
+            <input type="number" id="volts" placeholder="Volts (e.g., 120)" />
+            <input type="number" id="hours" placeholder="Hours Off Per Day" required />
+            <input type="number" id="rate" placeholder="kWh Rate (¢)" required />
+            <button type="submit">Add Appliance</button>
+        </form>
+        <div id="savings-summary">
+            <h2>Estimated Savings</h2>
+            <ul id="appliance-list"></ul>
+        </div>
     </div>
-  </div>
-
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
