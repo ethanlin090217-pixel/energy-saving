@@ -3,6 +3,11 @@ const CO2_LB_PER_KWH = 0.92; // pounds CO₂ per kWh
 
 // Helpers
 const $ = (id) => document.getElementById(id);
+const showError = (msg) => {
+  const box = $('error');
+  box.textContent = msg;
+  box.style.display = msg ? 'block' : 'none';
+};
 const dollars = (n) => `$${(Number.isFinite(n) ? n : 0).toFixed(2)}`;
 const pounds  = (n) => `${(Number.isFinite(n) ? n : 0).toFixed(2)} lbs`;
 
@@ -10,16 +15,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const form = $('appliance-form');
   const useDays = $('use-days');
   const daysWrap = $('days-wrap');
+  const daysSinceInput = $('days-since');
 
-  // Show/hide "days since" input
+  // Toggle "days since" input visibility + required flag
   useDays.addEventListener('change', () => {
-    daysWrap.classList.toggle('show', useDays.checked);
+    const show = useDays.checked;
+    daysWrap.classList.toggle('show', show);
+    daysSinceInput.required = show;
   });
 
-  // Submit handler
   form.addEventListener('submit', (e) => {
-    e.preventDefault(); // prevent page reload
+    e.preventDefault();
+    showError(''); // reset error box
 
+    // Read inputs
     const name = $('appliance-name').value.trim();
     const wattageInput = parseFloat($('wattage').value);
     const amps = parseFloat($('amps').value);
@@ -27,21 +36,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const hoursOff = parseFloat($('hours-off').value);
     const rateCents = parseFloat($('kwh-rate').value);
 
-    if (!name || isNaN(hoursOff) || isNaN(rateCents)) {
-      alert("Please fill in appliance name, hours off per day, and kWh rate.");
-      return;
-    }
+    // Basic required checks
+    if (!name) return showError('Please enter an appliance name.');
+    if (!Number.isFinite(hoursOff)) return showError('Please enter Hours Off Per Day.');
+    if (!Number.isFinite(rateCents)) return showError('Please enter your kWh rate in cents.');
 
     // Determine wattage (prefer direct wattage, else amps*volts)
-    let wattage = !isNaN(wattageInput) ? wattageInput :
-                  (!isNaN(amps) && !isNaN(volts)) ? amps * volts : null;
+    let wattage = Number.isFinite(wattageInput) ? wattageInput :
+                  (Number.isFinite(amps) && Number.isFinite(volts)) ? amps * volts : NaN;
 
-    if (!wattage || isNaN(wattage)) {
-      alert("Please enter either wattage OR both amps and volts.");
-      return;
+    if (!Number.isFinite(wattage) || wattage <= 0) {
+      return showError('Enter either Wattage, or both Amps and Volts (all > 0).');
     }
 
+    if (hoursOff < 0) return showError('Hours Off Per Day must be ≥ 0.');
+    if (rateCents < 0) return showError('kWh rate (cents) must be ≥ 0.');
+
+    // If "since install" mode enabled, validate daysSince
+    const sinceMode = useDays.checked;
+    let daysSince = null;
+    if (sinceMode) {
+      daysSince = parseFloat(daysSinceInput.value);
+      if (!Number.isFinite(daysSince) || daysSince <= 0) {
+        return showError('Please enter a valid number of days since installation (> 0).');
+      }
+    }
+
+    // Calculations
     const rate = rateCents / 100; // cents -> dollars
+    // Energy saved per day (kWh) = (wattage [W] * hoursOff [h]) / 1000
     const kWhSavedPerDay = (wattage * hoursOff) / 1000;
 
     const dailySavings = kWhSavedPerDay * rate;
@@ -49,11 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const li = document.createElement('li');
 
-    // If "since install" checked and valid days provided, show totals
-    const daysSince = parseFloat($('days-since').value);
-    const useTotals = useDays.checked && !isNaN(daysSince) && daysSince > 0;
-
-    if (useTotals) {
+    if (sinceMode) {
       const totalSavings = dailySavings * daysSince;
       const totalCO2 = dailyCO2 * daysSince;
 
@@ -64,11 +83,11 @@ document.addEventListener('DOMContentLoaded', () => {
         🌱 CO₂ Avoided: <strong>${pounds(totalCO2)}</strong>
       `;
     } else {
-      // Original per-day/month/year view
+      // Original rates view
       const monthlySavings = dailySavings * 30;
-      const yearlySavings = dailySavings * 365;
+      const yearlySavings  = dailySavings * 365;
       const monthlyCO2 = dailyCO2 * 30;
-      const yearlyCO2 = dailyCO2 * 365;
+      const yearlyCO2  = dailyCO2 * 365;
 
       li.innerHTML = `
         <strong>${name}</strong><br>
@@ -79,10 +98,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     $('appliance-list').appendChild(li);
 
-    // Reset, but keep the checkbox state (UX choice: keep or clear—your call)
-    const keepUseDays = useDays.checked;
+    // Reset form but keep checkbox state visible
+    const keepSince = useDays.checked;
     form.reset();
-    useDays.checked = keepUseDays;
-    daysWrap.classList.toggle('show', keepUseDays);
+    useDays.checked = keepSince;
+    daysWrap.classList.toggle('show', keepSince);
+    daysSinceInput.required = keepSince;
+    showError(''); // clear any lingering errors
   });
 });
