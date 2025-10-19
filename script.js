@@ -1,23 +1,28 @@
-// Constants
+// ===== Constants & helpers =====
 const CO2_LB_PER_KWH = 0.92; // pounds CO₂ per kWh
-
-// Helpers
 const $ = (id) => document.getElementById(id);
-const showError = (msg) => {
-  const box = $('error');
-  box.textContent = msg;
-  box.style.display = msg ? 'block' : 'none';
-};
 const dollars = (n) => `$${(Number.isFinite(n) ? n : 0).toFixed(2)}`;
 const pounds  = (n) => `${(Number.isFinite(n) ? n : 0).toFixed(2)} lbs`;
 
+function showError(msg) {
+  const box = $('error');
+  box.textContent = msg || '';
+  box.style.display = msg ? 'block' : 'none';
+}
+
+// ===== Main =====
 document.addEventListener('DOMContentLoaded', () => {
+  // prove JS loaded
+  const status = $('status');
+  if (status) status.textContent = 'JavaScript loaded ✔';
+
   const form = $('appliance-form');
   const useDays = $('use-days');
   const daysWrap = $('days-wrap');
   const daysSinceInput = $('days-since');
+  const list = $('appliance-list');
 
-  // Toggle "days since" input visibility + required flag
+  // Toggle days input visibility + required flag
   useDays.addEventListener('change', () => {
     const show = useDays.checked;
     daysWrap.classList.toggle('show', show);
@@ -25,30 +30,29 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    showError(''); // reset error box
+    e.preventDefault(); // stop page reload
+    showError('');      // clear any old error
 
-    // Read inputs
-    const name = $('appliance-name').value.trim();
-    const wattageInput = parseFloat($('wattage').value);
-    const amps = parseFloat($('amps').value);
-    const volts = parseFloat($('volts').value);
-    const hoursOff = parseFloat($('hours-off').value);
-    const rateCents = parseFloat($('kwh-rate').value);
+    // Read inputs safely
+    const name = ($('appliance-name').value || '').trim();
+    const wattageInput = Number($('wattage').value);
+    const amps  = Number($('amps').value);
+    const volts = Number($('volts').value);
+    const hoursOff = Number($('hours-off').value);
+    const rateCents = Number($('kwh-rate').value);
 
-    // Basic required checks
     if (!name) return showError('Please enter an appliance name.');
     if (!Number.isFinite(hoursOff)) return showError('Please enter Hours Off Per Day.');
     if (!Number.isFinite(rateCents)) return showError('Please enter your kWh rate in cents.');
 
-    // Determine wattage (prefer direct wattage, else amps*volts)
-    let wattage = Number.isFinite(wattageInput) ? wattageInput :
-                  (Number.isFinite(amps) && Number.isFinite(volts)) ? amps * volts : NaN;
+    // Determine wattage: prefer direct wattage, else amps * volts
+    let wattage = Number.isFinite(wattageInput) ? wattageInput
+               : (Number.isFinite(amps) && Number.isFinite(volts)) ? amps * volts
+               : NaN;
 
     if (!Number.isFinite(wattage) || wattage <= 0) {
       return showError('Enter either Wattage, or both Amps and Volts (all > 0).');
     }
-
     if (hoursOff < 0) return showError('Hours Off Per Day must be ≥ 0.');
     if (rateCents < 0) return showError('kWh rate (cents) must be ≥ 0.');
 
@@ -56,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sinceMode = useDays.checked;
     let daysSince = null;
     if (sinceMode) {
-      daysSince = parseFloat(daysSinceInput.value);
+      daysSince = Number(daysSinceInput.value);
       if (!Number.isFinite(daysSince) || daysSince <= 0) {
         return showError('Please enter a valid number of days since installation (> 0).');
       }
@@ -64,12 +68,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Calculations
     const rate = rateCents / 100; // cents -> dollars
-    // Energy saved per day (kWh) = (wattage [W] * hoursOff [h]) / 1000
-    const kWhSavedPerDay = (wattage * hoursOff) / 1000;
-
+    const kWhSavedPerDay = (wattage * hoursOff) / 1000; // kWh/day
     const dailySavings = kWhSavedPerDay * rate;
     const dailyCO2 = kWhSavedPerDay * CO2_LB_PER_KWH;
 
+    // Build list item
     const li = document.createElement('li');
 
     if (sinceMode) {
@@ -83,7 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
         🌱 CO₂ Avoided: <strong>${pounds(totalCO2)}</strong>
       `;
     } else {
-      // Original rates view
       const monthlySavings = dailySavings * 30;
       const yearlySavings  = dailySavings * 365;
       const monthlyCO2 = dailyCO2 * 30;
@@ -96,14 +98,14 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     }
 
-    $('appliance-list').appendChild(li);
+    // Append
+    list.appendChild(li);
 
-    // Reset form but keep checkbox state visible
+    // Reset but preserve sinceMode checkbox visibility
     const keepSince = useDays.checked;
     form.reset();
     useDays.checked = keepSince;
     daysWrap.classList.toggle('show', keepSince);
     daysSinceInput.required = keepSince;
-    showError(''); // clear any lingering errors
   });
 });
