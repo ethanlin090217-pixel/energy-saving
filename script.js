@@ -7,20 +7,18 @@ document.getElementById("appliance-form").addEventListener("submit", function (e
     const amps = parseFloat(inputs[2].value);
     const volts = parseFloat(inputs[3].value);
     const hours = parseFloat(inputs[4].value);
-    const rate = parseFloat(inputs[5].value) / 100; // cents to dollars
+    const rate = parseFloat(inputs[5].value) / 100; // convert ¢ to $
 
-    // 💡 Calculate watts: use direct wattage input, or calculate from amps × volts
-    let watts = wattsInput;
-    if (isNaN(watts) && !isNaN(amps) && !isNaN(volts)) {
-        watts = amps * volts;
-    }
+    // Only calculate watts if not provided
+    let watts = !isNaN(wattsInput) ? wattsInput : (isNaN(amps) || isNaN(volts)) ? NaN : amps * volts;
 
+    // Validation: all of these must be valid numbers
     if (isNaN(watts) || isNaN(hours) || isNaN(rate)) {
-        alert("Please enter valid numbers for hours, rate, and either wattage or amps/volts.");
+        alert("⚠️ Please enter either valid Wattage or Amps+Volts, plus valid Hours and kWh rate.");
         return;
     }
 
-    // 💰 Calculate savings
+    // Calculate energy and cost
     const daily = (watts * hours / 1000) * rate;
     const monthly = daily * 30;
     const yearly = daily * 365;
