@@ -10,15 +10,17 @@
 <body>
     <div class="container">
         <h1>Energy Savings Calculator</h1>
+        
         <form id="appliance-form">
+            <input type="text" placeholder="Appliance Name (e.g., Fridge)" />
             <input type="number" placeholder="Wattage (optional)" />
             <input type="number" placeholder="Amps (e.g., 3.3)" />
             <input type="number" placeholder="Volts (e.g., 120)" />
             <input type="number" placeholder="Hours Off Per Day" />
             <input type="number" placeholder="kWh Rate (¢)" />
             <button>Add Appliance</button>
-
         </form>
+
         <div id="savings-summary">
             <h2>Estimated Savings</h2>
             <ul id="appliance-list"></ul>
