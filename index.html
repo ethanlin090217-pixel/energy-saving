@@ -18,19 +18,20 @@
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
       width: 100%;
-      max-width: 600px;
+      max-width: 640px;
     }
     input, button, label {
-      width: 100%;
       font-size: 16px;
     }
     input, select {
       display: block;
+      width: 100%;
       padding: 10px;
       margin: 10px 0;
     }
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     button {
+      width: 100%;
       padding: 12px;
       margin-top: 10px;
       background: #ddd;
@@ -48,35 +49,39 @@
     .days-wrap { display: none; }
     .days-wrap.show { display: block; }
     .hint { font-size: 12px; color: #666; margin-top: -6px; }
+    .error { color: #b00020; background:#ffe8e8; padding:8px; border-radius:6px; margin:8px 0; display:none; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Energy Savings Calculator</h1>
 
-    <form id="appliance-form">
+    <div id="error" class="error"></div>
+
+    <form id="appliance-form" novalidate>
       <input type="text" id="appliance-name" placeholder="Appliance Name (e.g., fridge)" required />
 
       <div class="row">
-        <input type="number" id="wattage" step="any" placeholder="Wattage (optional)" />
-        <input type="number" id="amps" step="any" placeholder="Amps (e.g., 3.3)" />
+        <input type="number" id="wattage" step="any" min="0" placeholder="Wattage (optional)" />
+        <input type="number" id="amps" step="any" min="0" placeholder="Amps (e.g., 3.3)" />
       </div>
 
       <div class="row">
-        <input type="number" id="volts" step="any" placeholder="Volts (e.g., 120)" />
-        <input type="number" id="hours-off" step="any" placeholder="Hours Off Per Day" required />
+        <input type="number" id="volts" step="any" min="0" placeholder="Volts (e.g., 120)" />
+        <input type="number" id="hours-off" step="any" min="0" placeholder="Hours Off Per Day" required />
       </div>
 
-      <input type="number" id="kwh-rate" step="any" placeholder="kWh Rate (¢)" required />
+      <input type="number" id="kwh-rate" step="any" min="0" placeholder="kWh Rate (¢ per kWh)" required />
 
-      <!-- Optional: totals since install -->
+      <!-- Optional totals since install -->
       <div class="inline">
         <input type="checkbox" id="use-days" style="width:auto"/>
         <label for="use-days" style="width:auto; margin:0;">Calculate totals since installation</label>
       </div>
+
       <div id="days-wrap" class="days-wrap">
         <input type="number" id="days-since" step="any" min="0" placeholder="Days since installed (e.g., 42)" />
-        <div class="hint">If provided, we’ll show total $ and CO₂ saved for this many days.</div>
+        <div class="hint">When checked, this becomes required. We’ll show total $ and CO₂ saved over this many days.</div>
       </div>
 
       <button type="submit" id="add-btn">Add Appliance</button>
