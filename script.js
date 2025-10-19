@@ -1,36 +1,55 @@
 document.getElementById("appliance-form").addEventListener("submit", function (e) {
     e.preventDefault();
 
-    const inputs = e.target.elements;
-    const name = inputs[0].value || "Appliance";
-    const wattsInput = parseFloat(inputs[1].value);
-    const amps = parseFloat(inputs[2].value);
-    const volts = parseFloat(inputs[3].value);
-    const hours = parseFloat(inputs[4].value);
-    const rate = parseFloat(inputs[5].value) / 100; // convert ¢ to $
+    const name = document.getElementById("name").value.trim();
+    const wattsInput = parseFloat(document.getElementById("watts").value);
+    const amps = parseFloat(document.getElementById("amps").value);
+    const volts = parseFloat(document.getElementById("volts").value);
+    const hours = parseFloat(document.getElementById("hours").value);
+    const rate = parseFloat(document.getElementById("rate").value);
 
-    // Only calculate watts if not provided
-    let watts = !isNaN(wattsInput) ? wattsInput : (isNaN(amps) || isNaN(volts)) ? NaN : amps * volts;
-
-    // Validation: all of these must be valid numbers
-    if (isNaN(watts) || isNaN(hours) || isNaN(rate)) {
-        alert("⚠️ Please enter either valid Wattage or Amps+Volts, plus valid Hours and kWh rate.");
+    if (!name || isNaN(hours) || isNaN(rate)) {
+        alert("Please enter valid inputs for appliance name, hours, and rate.");
         return;
     }
 
-    // Calculate energy and cost
-    const daily = (watts * hours / 1000) * rate;
-    const monthly = daily * 30;
-    const yearly = daily * 365;
+    let watts = 0;
+    if (!isNaN(wattsInput)) {
+        watts = wattsInput;
+    } else if (!isNaN(amps) && !isNaN(volts)) {
+        watts = amps * volts;
+    } else {
+        alert("Please enter either wattage or both amps and volts.");
+        return;
+    }
 
-    const result = `${name}: $${daily.toFixed(2)}/day, $${monthly.toFixed(2)}/month, $${yearly.toFixed(2)}/year`;
+    // Calculate daily energy savings in kWh
+    const kWhSavedPerDay = (watts * hours) / 1000;
+
+    // Cost savings
+    const costPerkWh = rate / 100;
+    const dailySavings = kWhSavedPerDay * costPerkWh;
+    const monthlySavings = dailySavings * 30;
+    const yearlySavings = dailySavings * 365;
+
+    // CO2 emissions savings
+    const lbsCO2PerkWh = 0.92;
+    const dailyCO2 = kWhSavedPerDay * lbsCO2PerkWh;
+    const monthlyCO2 = dailyCO2 * 30;
+    const yearlyCO2 = dailyCO2 * 365;
 
     const listItem = document.createElement("li");
-    listItem.textContent = result;
-    listItem.style.backgroundColor = "#e6f2ff";
-    listItem.style.padding = "8px";
-    listItem.style.marginTop = "4px";
+    listItem.innerHTML = `
+        <strong>${name}</strong>: 
+        $${dailySavings.toFixed(2)}/day, 
+        $${monthlySavings.toFixed(2)}/month, 
+        $${yearlySavings.toFixed(2)}/year<br>
+        🌱 CO₂ Saved: ${dailyCO2.toFixed(2)} lbs/day, 
+        ${monthlyCO2.toFixed(2)} lbs/month, 
+        ${yearlyCO2.toFixed(2)} lbs/year
+    `;
     document.getElementById("appliance-list").appendChild(listItem);
 
+    // Clear form
     e.target.reset();
 });
