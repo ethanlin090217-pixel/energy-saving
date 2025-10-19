@@ -1,0 +1,28 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Energy Savings Calculator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Energy Savings Calculator</h1>
+        <form id="appliance-form">
+            <input type="text" id="appliance-name" placeholder="Appliance Name (e.g., Fridge)" required>
+            <input type="number" id="watts" placeholder="Wattage (e.g., 380)" required>
+            <input type="number" id="amps" placeholder="Amps (if unknown watts)" step="0.1">
+            <input type="number" id="hours-off" placeholder="Hours Off Per Day (e.g., 2.5)" step="0.1" required>
+            <input type="number" id="rate" placeholder="kWh Rate (e.g., 14.72)" step="0.01" required>
+            <button type="submit">Add Appliance</button>
+        </form>
+        <div id="savings-summary">
+            <h2>Estimated Savings</h2>
+            <ul id="appliance-list"></ul>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
