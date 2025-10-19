@@ -1,29 +1,32 @@
-document.querySelector("button").addEventListener("click", () => {
-  const name = document.querySelectorAll("input")[0].value;
-  const wattInput = parseFloat(document.querySelectorAll("input")[1].value);
-  const amps = parseFloat(document.querySelectorAll("input")[2].value);
-  const volts = parseFloat(document.querySelectorAll("input")[3].value);
-  const hoursOff = parseFloat(document.querySelectorAll("input")[4].value);
-  const rate = parseFloat(document.querySelectorAll("input")[5].value);
+document.getElementById("appliance-form").addEventListener("submit", function (e) {
+  e.preventDefault();
 
-  // Calculate watts: prefer direct input, else compute from amps and volts
-  let watts = isNaN(wattInput) ? amps * volts : wattInput;
+  const name = document.getElementById("name").value;
+  const wattInput = parseFloat(document.getElementById("wattage").value);
+  const amps = parseFloat(document.getElementById("amps").value);
+  const volts = parseFloat(document.getElementById("volts").value);
+  const hoursOff = parseFloat(document.getElementById("hoursOff").value);
+  const rate = parseFloat(document.getElementById("rate").value) / 100; // convert cents to dollars
 
-  // Safety check
-  if (isNaN(watts) || isNaN(hoursOff) || isNaN(rate)) {
-    alert("Please enter valid numbers for all fields.");
+  // Calculate wattage
+  let wattage = !isNaN(wattInput) ? wattInput : (isNaN(amps) || isNaN(volts)) ? 0 : amps * volts;
+
+  if (isNaN(wattage) || wattage <= 0 || isNaN(hoursOff) || isNaN(rate)) {
+    alert("Please enter valid numbers for either wattage or amps+volts, hours, and rate.");
     return;
   }
 
-  const dailySavings = (watts / 1000) * hoursOff * rate;
+  // Convert wattage to kWh
+  const kWhSavedPerDay = (wattage * hoursOff) / 1000;
+  const dailySavings = kWhSavedPerDay * rate;
   const monthlySavings = dailySavings * 30;
   const yearlySavings = dailySavings * 365;
 
-  const output = document.createElement("div");
-  output.textContent = `${name}: $${dailySavings.toFixed(2)}/day, $${monthlySavings.toFixed(2)}/month, $${yearlySavings.toFixed(2)}/year`;
-  output.style.backgroundColor = "#e0f0ff";
-  output.style.padding = "10px";
-  output.style.margin = "5px 0";
+  const listItem = document.createElement("li");
+  listItem.textContent = `${name}: $${dailySavings.toFixed(2)}/day, $${monthlySavings.toFixed(2)}/month, $${yearlySavings.toFixed(2)}/year`;
 
-  document.body.appendChild(output);
+  document.getElementById("appliance-list").appendChild(listItem);
+
+  // Clear inputs
+  document.getElementById("appliance-form").reset();
 });
