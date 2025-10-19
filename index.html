@@ -20,19 +20,23 @@
       width: 100%;
       max-width: 600px;
     }
-    input, select, button {
-      display: block;
+    input, button, label {
       width: 100%;
-      padding: 10px;
-      margin: 10px 0;
       font-size: 16px;
     }
+    input, select {
+      display: block;
+      padding: 10px;
+      margin: 10px 0;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     button {
+      padding: 12px;
+      margin-top: 10px;
       background: #ddd;
       border: none;
       cursor: pointer;
     }
-    .inline-help { font-size: 12px; color: #666; margin-top: -6px; }
     ul { list-style: none; padding: 0; }
     li {
       background: #e0f2ff;
@@ -40,8 +44,10 @@
       margin-top: 10px;
       border-radius: 5px;
     }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .hidden { display: none; }
+    .inline { display: flex; align-items: center; gap: 10px; margin: 6px 0 0; }
+    .days-wrap { display: none; }
+    .days-wrap.show { display: block; }
+    .hint { font-size: 12px; color: #666; margin-top: -6px; }
   </style>
 </head>
 <body>
@@ -63,25 +69,17 @@
 
       <input type="number" id="kwh-rate" step="any" placeholder="kWh Rate (¢)" required />
 
-      <!-- Output mode -->
-      <label for="output-mode"><strong>Output Mode</strong></label>
-      <select id="output-mode">
-        <option value="rates" selected>Rates (per day / month / year)</option>
-        <option value="custom">Custom Period (total since start/end)</option>
-      </select>
-
-      <!-- Custom period inputs -->
-      <div id="custom-period" class="hidden">
-        <label for="start-dt">Start (required)</label>
-        <input type="datetime-local" id="start-dt" />
-        <label for="end-dt">End (optional, defaults to now)</label>
-        <input type="datetime-local" id="end-dt" />
-        <div class="inline-help">
-          Uses your “Hours Off Per Day” as the daily schedule and scales by exact elapsed time.
-        </div>
+      <!-- Optional: totals since install -->
+      <div class="inline">
+        <input type="checkbox" id="use-days" style="width:auto"/>
+        <label for="use-days" style="width:auto; margin:0;">Calculate totals since installation</label>
+      </div>
+      <div id="days-wrap" class="days-wrap">
+        <input type="number" id="days-since" step="any" min="0" placeholder="Days since installed (e.g., 42)" />
+        <div class="hint">If provided, we’ll show total $ and CO₂ saved for this many days.</div>
       </div>
 
-      <button type="submit">Add Appliance</button>
+      <button type="submit" id="add-btn">Add Appliance</button>
     </form>
 
     <div id="savings-summary">
@@ -90,7 +88,6 @@
     </div>
   </div>
 
-  <!-- Link to external JS -->
   <script src="script.js"></script>
 </body>
 </html>
