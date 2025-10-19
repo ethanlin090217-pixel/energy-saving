@@ -1,22 +1,29 @@
+document.querySelector("button").addEventListener("click", () => {
+  const name = document.querySelectorAll("input")[0].value;
+  const wattInput = parseFloat(document.querySelectorAll("input")[1].value);
+  const amps = parseFloat(document.querySelectorAll("input")[2].value);
+  const volts = parseFloat(document.querySelectorAll("input")[3].value);
+  const hoursOff = parseFloat(document.querySelectorAll("input")[4].value);
+  const rate = parseFloat(document.querySelectorAll("input")[5].value);
 
-document.getElementById('appliance-form').addEventListener('submit', function(e) {
-    e.preventDefault();
+  // Calculate watts: prefer direct input, else compute from amps and volts
+  let watts = isNaN(wattInput) ? amps * volts : wattInput;
 
-    const name = document.getElementById('appliance-name').value;
-    const watts = parseFloat(document.getElementById('watts').value);
-    const amps = parseFloat(document.getElementById('amps').value);
-    const hours = parseFloat(document.getElementById('hours-off').value);
-    const rate = parseFloat(document.getElementById('rate').value) / 100;
+  // Safety check
+  if (isNaN(watts) || isNaN(hoursOff) || isNaN(rate)) {
+    alert("Please enter valid numbers for all fields.");
+    return;
+  }
 
-    const wattage = isNaN(watts) ? amps * 120 : watts;
-    const kWh_saved = (wattage / 1000) * hours;
-    const daily_savings = kWh_saved * rate;
-    const monthly_savings = daily_savings * 30;
-    const yearly_savings = daily_savings * 365;
+  const dailySavings = (watts / 1000) * hoursOff * rate;
+  const monthlySavings = dailySavings * 30;
+  const yearlySavings = dailySavings * 365;
 
-    const entry = document.createElement('li');
-    entry.textContent = `${name}: $${daily_savings.toFixed(2)}/day, $${monthly_savings.toFixed(2)}/month, $${yearly_savings.toFixed(2)}/year`;
-    document.getElementById('appliance-list').appendChild(entry);
+  const output = document.createElement("div");
+  output.textContent = `${name}: $${dailySavings.toFixed(2)}/day, $${monthlySavings.toFixed(2)}/month, $${yearlySavings.toFixed(2)}/year`;
+  output.style.backgroundColor = "#e0f0ff";
+  output.style.padding = "10px";
+  output.style.margin = "5px 0";
 
-    this.reset();
+  document.body.appendChild(output);
 });
