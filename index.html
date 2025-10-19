@@ -1,29 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Energy Savings Calculator</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Energy Savings Calculator</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      padding: 30px;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 600px;
+    }
+    input {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      background: #ddd;
+      border: none;
+      cursor: pointer;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      background: #e0f2ff;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 5px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Energy Savings Calculator</h1>
-        <form id="appliance-form">
-            <input type="text" id="appliance-name" placeholder="Appliance Name (e.g., fridge)" required />
-            <input type="number" id="wattage" step="any" placeholder="Wattage (optional)" />
-            <input type="number" id="amps" step="any" placeholder="Amps (e.g., 3.3)" />
-            <input type="number" id="volts" step="any" placeholder="Volts (e.g., 120)" />
-            <input type="number" id="hours-off" step="any" placeholder="Hours Off Per Day" required />
-            <input type="number" id="kwh-rate" step="any" placeholder="kWh Rate (¢)" required />
-            <button type="submit">Add Appliance</button>
-        </form>
-
-        <div id="savings-summary">
-            <h2>Estimated Savings</h2>
-            <ul id="appliance-list"></ul>
-        </div>
+  <div class="container">
+    <h1>Energy Savings Calculator</h1>
+    <form id="appliance-form">
+      <input type="text" id="appliance-name" placeholder="Appliance Name (e.g., fridge)" required />
+      <input type="number" id="wattage" step="any" placeholder="Wattage (optional)" />
+      <input type="number" id="amps" step="any" placeholder="Amps (e.g., 3.3)" />
+      <input type="number" id="volts" step="any" placeholder="Volts (e.g., 120)" />
+      <input type="number" id="hours-off" step="any" placeholder="Hours Off Per Day" required />
+      <input type="number" id="kwh-rate" step="any" placeholder="kWh Rate (¢)" required />
+      <button type="submit">Add Appliance</button>
+    </form>
+    
+    <div id="savings-summary">
+      <h2>Estimated Savings</h2>
+      <ul id="appliance-list"></ul>
     </div>
-    <script src="script.js"></script>
+  </div>
+
+  <script>
+    document.getElementById('appliance-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const name = document.getElementById('appliance-name').value.trim();
+      const wattageInput = parseFloat(document.getElementById('wattage').value);
+      const amps = parseFloat(document.getElementById('amps').value);
+      const volts = parseFloat(document.getElementById('volts').value);
+      const hoursOff = parseFloat(document.getElementById('hours-off').value);
+      const rateCents = parseFloat(document.getElementById('kwh-rate').value);
+
+      if (!name || isNaN(hoursOff) || isNaN(rateCents)) {
+        alert("Please fill in appliance name, hours off per day, and kWh rate.");
+        return;
+      }
+
+      let wattage = !isNaN(wattageInput) ? wattageInput :
+                    (!isNaN(amps) && !isNaN(volts)) ? amps * volts : null;
+
+      if (!wattage || isNaN(wattage)) {
+        alert("Please enter either wattage or both amps and volts.");
+        return;
+      }
+
+      const rate = rateCents / 100;
+      const kWhSavedPerDay = (wattage * hoursOff) / 1000;
+      const dailySavings = kWhSavedPerDay * rate;
+      const monthlySavings = dailySavings * 30;
+      const yearlySavings = dailySavings * 365;
+
+      const dailyCO2 = kWhSavedPerDay * 0.92;
+      const monthlyCO2 = dailyCO2 * 30;
+      const yearlyCO2 = dailyCO2 * 365;
+
+      const dollars = amt => `$${amt.toFixed(2)}`;
+      const pounds = amt => `${amt.toFixed(2)} lbs`;
+
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <strong>${name}</strong><br>
+        💰 ${dollars(dailySavings)}/day, ${dollars(monthlySavings)}/month, ${dollars(yearlySavings)}/year<br>
+        🌱 CO₂ Saved: ${pounds(dailyCO2)}/day, ${pounds(monthlyCO2)}/month, ${pounds(yearlyCO2)}/year
+      `;
+
+      document.getElementById('appliance-list').appendChild(li);
+
+      // Clear form
+      document.getElementById('appliance-form').reset();
+    });
+  </script>
 </body>
 </html>
