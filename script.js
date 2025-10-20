@@ -46,9 +46,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!Number.isFinite(rateCents)) return showError('Please enter your kWh rate in cents.');
 
     // Determine wattage: prefer direct wattage, else amps * volts
-    let wattage = Number.isFinite(wattageInput) ? wattageInput
-               : (Number.isFinite(amps) && Number.isFinite(volts)) ? amps * volts
-               : NaN;
+   // Determine wattage
+let wattage;
+if (!isNaN(wattageInput) && wattageInput > 0) {
+  wattage = wattageInput;
+} else if (!isNaN(amps) && !isNaN(volts) && amps > 0 && volts > 0) {
+  wattage = amps * volts;
+} else {
+  alert("Please enter either wattage or both amps and volts.");
+  return;
+}
+
 
     if (!Number.isFinite(wattage) || wattage <= 0) {
       return showError('Enter either Wattage, or both Amps and Volts (all > 0).');
