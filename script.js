@@ -6,23 +6,20 @@ const pounds  = (n) => `${(Number.isFinite(n) ? n : 0).toFixed(2)} lbs`;
 
 function showError(msg) {
   const box = $('error');
+  if (!box) return alert(msg);
   box.textContent = msg || '';
   box.style.display = msg ? 'block' : 'none';
 }
 
 // ===== Main =====
 document.addEventListener('DOMContentLoaded', () => {
-  // prove JS loaded
-  const status = $('status');
-  if (status) status.textContent = 'JavaScript loaded ✔';
-
   const form = $('appliance-form');
   const useDays = $('use-days');
   const daysWrap = $('days-wrap');
   const daysSinceInput = $('days-since');
   const list = $('appliance-list');
 
-  // Toggle days input visibility + required flag
+  // Toggle “days since” input visibility + required flag
   useDays.addEventListener('change', () => {
     const show = useDays.checked;
     daysWrap.classList.toggle('show', show);
@@ -35,58 +32,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Read inputs safely
     const name = ($('appliance-name').value || '').trim();
-    const wattageInput = Number($('wattage').value);
-    const amps  = Number($('amps').value);
-    const volts = Number($('volts').value);
-    const hoursOff = Number($('hours-off').value);
-    const rateCents = Number($('kwh-rate').value);
+    const wattageInput = parseFloat($('wattage').value);
+    const amps  = parseFloat($('amps').value);
+    const volts = parseFloat($('volts').value);
+    const hoursOff = parseFloat($('hours-off').value);
+    const rateCents = parseFloat($('kwh-rate').value);
 
     if (!name) return showError('Please enter an appliance name.');
     if (!Number.isFinite(hoursOff)) return showError('Please enter Hours Off Per Day.');
     if (!Number.isFinite(rateCents)) return showError('Please enter your kWh rate in cents.');
 
-    // Determine wattage: prefer direct wattage, else amps * volts
-   // Determine wattage
-let wattage;
-if (!isNaN(wattageInput) && wattageInput > 0) {
-  wattage = wattageInput;
-} else if (!isNaN(amps) && !isNaN(volts) && amps > 0 && volts > 0) {
-  wattage = amps * volts;
-} else {
-  alert("Please enter either wattage or both amps and volts.");
-  return;
-}
-
-
-    if (!Number.isFinite(wattage) || wattage <= 0) {
-      return showError('Enter either Wattage, or both Amps and Volts (all > 0).');
-    }
-    if (hoursOff < 0) return showError('Hours Off Per Day must be ≥ 0.');
-    if (rateCents < 0) return showError('kWh rate (cents) must be ≥ 0.');
-
-    // If "since install" mode enabled, validate daysSince
-    const sinceMode = useDays.checked;
-    let daysSince = null;
-    if (sinceMode) {
-      daysSince = Number(daysSinceInput.value);
-      if (!Number.isFinite(daysSince) || daysSince <= 0) {
-        return showError('Please enter a valid number of days since installation (> 0).');
-      }
+    // ✅ Fixed: determine wattage correctly
+    let wattage;
+    if (Number.isFinite(wattageInput) && wattageInput > 0) {
+      wattage = wattageInput;
+    } else if (Number.isFinite(amps) && Number.isFinite(volts) && amps > 0 && volts > 0) {
+      wattage = amps * volts;
+    } else {
+      showError('Please enter either wattage OR both amps and volts.');
+      return;
     }
 
-    // Calculations
-    const rate = rateCents / 100; // cents -> dollars
+    const rate = rateCents / 100; // cents → dollars
     const kWhSavedPerDay = (wattage * hoursOff) / 1000; // kWh/day
     const dailySavings = kWhSavedPerDay * rate;
     const dailyCO2 = kWhSavedPerDay * CO2_LB_PER_KWH;
 
-    // Build list item
     const li = document.createElement('li');
 
-    if (sinceMode) {
+    // Handle “since installation” mode
+    const sinceMode = useDays.checked;
+    const daysSince = parseFloat(daysSinceInput.value);
+
+    if (sinceMode && Number.isFinite(daysSince) && daysSince > 0) {
       const totalSavings = dailySavings * daysSince;
       const totalCO2 = dailyCO2 * daysSince;
-
       li.innerHTML = `
         <strong>${name}</strong><br>
         ⏱️ ${daysSince.toFixed(2)} days since install<br>
@@ -94,6 +74,7 @@ if (!isNaN(wattageInput) && wattageInput > 0) {
         🌱 CO₂ Avoided: <strong>${pounds(totalCO2)}</strong>
       `;
     } else {
+      // Standard per-day/month/year output
       const monthlySavings = dailySavings * 30;
       const yearlySavings  = dailySavings * 365;
       const monthlyCO2 = dailyCO2 * 30;
@@ -106,10 +87,9 @@ if (!isNaN(wattageInput) && wattageInput > 0) {
       `;
     }
 
-    // Append
     list.appendChild(li);
 
-    // Reset but preserve sinceMode checkbox visibility
+    // Reset form but keep checkbox visibility
     const keepSince = useDays.checked;
     form.reset();
     useDays.checked = keepSince;
