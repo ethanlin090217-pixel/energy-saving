@@ -3,97 +3,316 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Energy Savings Calculator</title>
+  <title>SmartKitchen Energy Savings Calculator</title>
+
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: sans-serif;
-      background: #f5f5f5;
+      margin: 0;
+      font-family: Inter, sans-serif;
+      background: #111827;
+      color: #f9fafb;
       display: flex;
       justify-content: center;
-      padding: 30px;
+      padding: 40px 20px;
     }
+
     .container {
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
       width: 100%;
-      max-width: 640px;
+      max-width: 760px;
+      background: #1f2937;
+      border-radius: 18px;
+      padding: 36px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.35);
     }
-    input, button, label { font-size: 16px; }
-    input, select {
-      display: block;
+
+    h1 {
+      margin: 0;
+      font-size: 42px;
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+
+    .subtitle {
+      margin-top: 10px;
+      color: #9ca3af;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    h2 {
+      margin-top: 40px;
+      margin-bottom: 16px;
+      font-size: 26px;
+      font-weight: 600;
+    }
+
+    form {
+      margin-top: 30px;
+    }
+
+    input,
+    button,
+    label {
+      font-size: 16px;
+      font-family: inherit;
+    }
+
+    input {
       width: 100%;
-      padding: 10px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid #374151;
+      background: #111827;
+      color: #f9fafb;
       margin: 10px 0;
+      transition: 0.2s ease;
     }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    input::placeholder {
+      color: #6b7280;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #22c55e;
+      box-shadow: 0 0 0 3px rgba(34,197,94,0.15);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
     button {
       width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      background: #ddd;
+      padding: 15px;
+      margin-top: 18px;
       border: none;
+      border-radius: 12px;
+      background: #22c55e;
+      color: white;
+      font-weight: 600;
       cursor: pointer;
+      transition: 0.2s ease;
     }
-    ul { list-style: none; padding: 0; }
-    li {
-      background: #e0f2ff;
+
+    button:hover {
+      background: #16a34a;
+    }
+
+    .inline {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .inline input {
+      width: auto;
+      margin: 0;
+    }
+
+    .days-wrap {
+      display: none;
+    }
+
+    .days-wrap.show {
+      display: block;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-top: -2px;
+      line-height: 1.4;
+    }
+
+    .error {
+      color: #fecaca;
+      background: rgba(127,29,29,0.35);
       padding: 12px;
-      margin-top: 10px;
-      border-radius: 5px;
+      border-radius: 10px;
+      margin: 12px 0;
+      display: none;
     }
-    .inline { display: flex; align-items: center; gap: 10px; margin: 6px 0 0; }
-    .days-wrap { display: none; }
-    .days-wrap.show { display: block; }
-    .hint { font-size: 12px; color: #666; margin-top: -6px; }
-    .error { color: #b00020; background:#ffe8e8; padding:8px; border-radius:6px; margin:8px 0; display:none; }
-    .ok { font-size: 12px; color:#2c7a2c; }
+
+    .ok {
+      font-size: 13px;
+      color: #86efac;
+      margin-top: 10px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      background: #111827;
+      border: 1px solid #374151;
+      border-radius: 16px;
+      padding: 22px;
+      margin-top: 18px;
+    }
+
+    .appliance-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+
+    .savings-big {
+      font-size: 36px;
+      font-weight: 700;
+      color: #22c55e;
+      margin-bottom: 8px;
+      letter-spacing: -1px;
+    }
+
+    .savings-small {
+      color: #d1d5db;
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .co2 {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid #374151;
+      color: #9ca3af;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 640px) {
+      .row {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 34px;
+      }
+
+      .container {
+        padding: 24px;
+      }
+
+      .savings-big {
+        font-size: 30px;
+      }
+    }
   </style>
 </head>
+
 <body>
+
   <div class="container">
+
     <h1>Energy Savings Calculator</h1>
+
+    <div class="subtitle">
+      Estimate operational cost savings and CO₂ reductions from reducing idle appliance runtime in commercial kitchens.
+    </div>
 
     <div id="error" class="error"></div>
     <div id="status" class="ok"></div>
 
     <form id="appliance-form" novalidate>
-      <input type="text" id="appliance-name" placeholder="Appliance Name (e.g., fridge)" required />
+
+      <input
+        type="text"
+        id="appliance-name"
+        placeholder="Appliance Name (e.g., Oven)"
+        required
+      />
 
       <div class="row">
-        <input type="number" id="wattage" step="any" min="0" placeholder="Wattage (optional)" />
-        <input type="number" id="amps" step="any" min="0" placeholder="Amps (e.g., 3.3)" />
+        <input
+          type="number"
+          id="wattage"
+          step="any"
+          min="0"
+          placeholder="Appliance Power (Watts)"
+        />
+
+        <input
+          type="number"
+          id="amps"
+          step="any"
+          min="0"
+          placeholder="Amps (e.g., 33.3)"
+        />
       </div>
 
       <div class="row">
-        <input type="number" id="volts" step="any" min="0" placeholder="Volts (e.g., 120)" />
-        <input type="number" id="hours-off" step="any" min="0" placeholder="Hours Off Per Day" required />
+        <input
+          type="number"
+          id="volts"
+          step="any"
+          min="0"
+          placeholder="Volts (e.g., 240)"
+        />
+
+        <input
+          type="number"
+          id="hours-off"
+          step="any"
+          min="0"
+          placeholder="Hours Reduced Per Day"
+          required
+        />
       </div>
 
-      <input type="number" id="kwh-rate" step="any" min="0" placeholder="kWh Rate (¢ per kWh)" required />
+      <input
+        type="number"
+        id="kwh-rate"
+        step="any"
+        min="0"
+        placeholder="Electricity Rate ($/kWh)"
+        required
+      />
 
-      <!-- Optional totals since install -->
       <div class="inline">
-        <input type="checkbox" id="use-days" style="width:auto"/>
-        <label for="use-days" style="width:auto; margin:0;">Calculate totals since installation</label>
+        <input type="checkbox" id="use-days"/>
+        <label for="use-days">
+          Calculate totals since installation
+        </label>
       </div>
 
       <div id="days-wrap" class="days-wrap">
-        <input type="number" id="days-since" step="any" min="0" placeholder="Days since installed (e.g., 42)" />
-        <div class="hint">When checked, this becomes required. We’ll show total $ and CO₂ saved for this many days.</div>
+        <input
+          type="number"
+          id="days-since"
+          step="any"
+          min="0"
+          placeholder="Days Since Installed"
+        />
+
+        <div class="hint">
+          When enabled, the calculator will estimate total savings and CO₂ reductions since deployment.
+        </div>
       </div>
 
-      <button type="submit" id="add-btn">Add Appliance</button>
+      <button type="submit" id="add-btn">
+        Add Appliance
+      </button>
+
     </form>
 
     <div id="savings-summary">
       <h2>Estimated Savings</h2>
       <ul id="appliance-list"></ul>
     </div>
+
   </div>
 
-  <!-- IMPORTANT: keep script.js in the same folder, name exactly 'script.js' -->
   <script src="./script.js" defer></script>
+
 </body>
 </html>
